@@ -1,0 +1,352 @@
+{
+  "name": "funnel_audit",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        -192
+      ],
+      "id": "b865c24d-7776-4aa3-a6d2-a35e1577b191",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1GR5E9rsU8hJvG7zKBdixZQJIIisEy9-nsYBLPaC67ac/edit?gid=1637434014#gid=1637434014",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1637434014,
+          "mode": "list",
+          "cachedResultName": "input_sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GR5E9rsU8hJvG7zKBdixZQJIIisEy9-nsYBLPaC67ac/edit#gid=1637434014"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -112,
+        -192
+      ],
+      "id": "b2a2cfce-57fb-46bc-a99b-846234af63e5",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ApCak9nV1ojGAPgu",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://shot.screenshotapi.net/screenshot",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "your_key"
+            },
+            {
+              "name": "url",
+              "value": "={{ $json.URL }}"
+            },
+            {
+              "name": "block_cookie_banners",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": false
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        336,
+        -112
+      ],
+      "id": "131df582-95c4-46f5-8684-13fe60a7f03a",
+      "name": "HTTP Request",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8890a919-e467-49c3-ad08-b404b4e57ad0",
+              "name": "URL",
+              "value": "={{ $('Get row(s) in sheet').item.json.URL }}",
+              "type": "string"
+            },
+            {
+              "id": "ce1edc9f-3659-47db-98f2-8728070a0759",
+              "name": "Analysis",
+              "value": "={{ $json.content[0].text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        -208
+      ],
+      "id": "7fb7c716-1f95-498b-8af6-958b06708049",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        112,
+        -96
+      ],
+      "id": "c013c069-8c8c-4dee-b8d1-a35a89f72a46",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1088,
+        -208
+      ],
+      "id": "22787493-873c-4c86-a469-a914874f71db",
+      "name": "Wait",
+      "webhookId": "20c64c37-b4ca-448f-9056-e48adba12ef0"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "claude-sonnet-4-5-20250929",
+          "mode": "list",
+          "cachedResultName": "claude-sonnet-4-5-20250929"
+        },
+        "text": "You are a UX Researcher specializing in detailed design audit.\nAnalyze the attached screenshot of this page that could be conversion frictions and add your recommendations. Keep your response within 50 words.",
+        "imageUrls": "={{ $json.screenshot }}",
+        "options": {
+          "maxTokens": 1024
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        544,
+        -208
+      ],
+      "id": "f060b8f8-e64d-4920-be8d-80cb94e10874",
+      "name": "Analyze image",
+      "retryOnFail": true,
+      "credentials": {
+        "anthropicApi": {
+          "id": "enuWMHPTYZyrhglr",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1GR5E9rsU8hJvG7zKBdixZQJIIisEy9-nsYBLPaC67ac/edit?gid=1637434014#gid=1637434014",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1637434014,
+          "mode": "list",
+          "cachedResultName": "input_sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GR5E9rsU8hJvG7zKBdixZQJIIisEy9-nsYBLPaC67ac/edit#gid=1637434014"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "URL": "={{ $json.URL }}",
+            "Analysis": "={{ $json.Analysis }}"
+          },
+          "matchingColumns": [
+            "URL"
+          ],
+          "schema": [
+            {
+              "id": "Page name",
+              "displayName": "Page name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Analysis",
+              "displayName": "Analysis",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        912,
+        -208
+      ],
+      "id": "df5c53a4-fa61-4c62-9297-18f2dbc4cbe3",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ApCak9nV1ojGAPgu",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Analyze image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze image": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b8cbd347-5cbe-497a-b8ca-06c5165f10b2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ba1c05e80133909f78de73359dd8c44589ba9110128cf010a937430dbda2aa58"
+  },
+  "id": "OTk1cOh3TesBAneY",
+  "tags": []
+}
